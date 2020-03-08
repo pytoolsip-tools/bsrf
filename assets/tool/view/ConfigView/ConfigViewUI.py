@@ -14,6 +14,8 @@ maxLevelCnt = 21;
 descriptionConfig = [
 	"【生成树状图】会根据遍历层级数来生成输入路径的文件树；",
 	"【查找输入框】允许输入正则匹配字符串；",
+	"【替换输入框】允许输入占位符“{}”；",
+	"【替换示例】输入：查找框“[x-zA-Z]*(\d+)”，替换框“test{}”；结果：“wx123 -> test123”；",
 ];
 
 class ConfigViewUI(wx.Panel):

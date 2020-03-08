@@ -117,7 +117,7 @@ class ContentViewUI(wx.Panel):
 		def onClick(event):
 			root = tc.GetRootItem();
 			tc.DeleteChildren(root);
-			self.updateDirTree(tc, root, _GG("CacheManager").getCache("selectedDirPath", ""), maxLevel = _GG("CacheManager").getCache("maxLevel", False));
+			self.updateDirTree(tc, root, _GG("CacheManager").getCache("selectedDirPath", ""), maxLevel = _GG("CacheManager").getCache("maxLevel", 10));
 		btn.Bind(wx.EVT_BUTTON, onClick);
 		return dirTrees;
 
@@ -145,7 +145,7 @@ class ContentViewUI(wx.Panel):
 				self.appendRichTextTo(ctx, "Warning:查找输入框不能为空！\n", style = "warning");
 				return;
 			self.appendRichTextTo(ctx, "---- 开始查找 ---- \n", style = "normal");
-			ignoreCase, maxLevel = _GG("CacheManager").getCache("ignoreCase", False), _GG("CacheManager").getCache("maxLevel", False);
+			ignoreCase, maxLevel = _GG("CacheManager").getCache("ignoreCase", False), _GG("CacheManager").getCache("maxLevel", 10);
 			self.findByDirPath(ctx, _GG("CacheManager").getCache("selectedDirPath", ""), findStr = textCtrl.GetValue(), ignoreCase = ignoreCase, maxLevel = maxLevel);
 			self.appendRichTextTo(ctx, "---- 查找结束 ---- \n", style = "normal");
 		def onClickReplaceIB(textCtrl):
@@ -158,7 +158,7 @@ class ContentViewUI(wx.Panel):
 				self.appendRichTextTo(ctx, "Warning:查找输入框不能为空！\n", style = "warning");
 				return;
 			self.appendRichTextTo(ctx, "---- 开始替换 ---- \n", style = "normal");
-			ignoreCase, maxLevel = _GG("CacheManager").getCache("ignoreCase", False), _GG("CacheManager").getCache("maxLevel", False);
+			ignoreCase, maxLevel = _GG("CacheManager").getCache("ignoreCase", False), _GG("CacheManager").getCache("maxLevel", 10);
 			self.replaceByDirPath(ctx, _GG("CacheManager").getCache("selectedDirPath", ""), findStr = findIb._input.GetValue(), replaceStr = textCtrl.GetValue(), ignoreCase = ignoreCase, maxLevel = maxLevel);
 			self.appendRichTextTo(ctx, "---- 替换结束 ---- \n", style = "normal");
 			# 更新替换撤销按钮
@@ -244,12 +244,13 @@ class ContentViewUI(wx.Panel):
 					flags = re.I;
 				mt = re.match("(.*)("+ findStr +")(.*)", file, flags = flags);
 				if mt:
-					g1 = os.path.join(dirPath.replace(srcPath, ""), mt.group(1));
+					g1, g2, *sg, g3 = mt.groups();
+					g1 = os.path.join(dirPath.replace(srcPath, ""), g1);
 					if g1 and (g1[0] == "\\" or g1[0] == "/"):
 						g1 = g1[1:];
 					self.appendRichTextTo(textCtrl, f"* {g1}", style = "normal");
-					self.appendRichTextTo(textCtrl, mt.group(2), style = "bold");
-					self.appendRichTextTo(textCtrl, mt.group(3) + "\n", style = "normal");
+					self.appendRichTextTo(textCtrl, g2, style = "bold");
+					self.appendRichTextTo(textCtrl, g3 + "\n", style = "normal");
 				# 递归进行查找
 				if os.path.isdir(os.path.join(dirPath, file)) and level <= maxLevel:
 					self.findByDirPath(textCtrl, os.path.join(dirPath, file), srcPath = srcPath, findStr = findStr, level = level + 1, ignoreCase = ignoreCase, maxLevel = maxLevel);
@@ -271,22 +272,27 @@ class ContentViewUI(wx.Panel):
 					flags = re.I;
 				mt = re.match("(.*)("+ findStr +")(.*)", file, flags = flags);
 				if mt:
-					g1 = os.path.join(dirPath.replace(srcPath, ""), mt.group(1));
+					g1, g2, *sg, g3 = mt.groups();
+					g1 = os.path.join(dirPath.replace(srcPath, ""), g1);
 					if g1 and (g1[0] == "\\" or g1[0] == "/"):
 						g1 = g1[1:];
 					self.appendRichTextTo(textCtrl, f"* {g1}", style = "normal");
-					self.appendRichTextTo(textCtrl, mt.group(2), style = "bold");
-					self.appendRichTextTo(textCtrl, mt.group(3) + " -> ", style = "normal");
+					self.appendRichTextTo(textCtrl, g2, style = "bold");
+					self.appendRichTextTo(textCtrl, g3 + " -> ", style = "normal");
 					try:
-						srcFilePath, targetFilePath = os.path.join(dirPath, file), os.path.join(dirPath, mt.group(1) + replaceStr + mt.group(3));
+						diff = replaceStr.count("{}") - len(sg); # 获取占位符与参数差值
+						if diff > 0:
+							sg.extend([""]*diff);
+						replaceStr = replaceStr.format(*sg); # 填充占位符
+						srcFilePath, targetFilePath = os.path.join(dirPath, file), os.path.join(srcPath, g1 + replaceStr + g3);
 						# 重命名
 						os.rename(srcFilePath, targetFilePath);
 						# 添加缓存
-						self.__replaceCache.append((srcPath, g1, (mt.group(2), replaceStr), mt.group(3)));
+						self.__replaceCache.append((srcPath, g1, (g2, replaceStr), g3));
 						# 添加重命名结果
 						self.appendRichTextTo(textCtrl, g1, style = "normal");
 						self.appendRichTextTo(textCtrl, replaceStr, style = "bold");
-						self.appendRichTextTo(textCtrl, mt.group(3), style = "normal");
+						self.appendRichTextTo(textCtrl, g3, style = "normal");
 					except Exception as e:
 						self.appendRichTextTo(textCtrl, f"替换失败！Error: {e}.", style = "error");
 					self.appendRichTextTo(textCtrl, "\n", style = "normal");
