@@ -106,7 +106,7 @@ class ContentViewUI(wx.Panel):
 	def createDirTrees(self, parent):
 		dirTrees = wx.Panel(parent, size = (240, -1), style = wx.BORDER_THEME);
 		btn = wx.Button(dirTrees, label = "生成树状图");
-		tc = wx.TreeCtrl(dirTrees, size = (dirTrees.GetSize().x, 420), style = wx.TR_HIDE_ROOT|wx.TR_LINES_AT_ROOT|wx.TR_HAS_BUTTONS);
+		tc = wx.TreeCtrl(dirTrees, size = (dirTrees.GetSize().x, 440), style = wx.TR_HIDE_ROOT|wx.TR_LINES_AT_ROOT|wx.TR_HAS_BUTTONS);
 		tc.AddRoot("root");
 		# 布局
 		box = wx.BoxSizer(wx.VERTICAL);
@@ -126,7 +126,7 @@ class ContentViewUI(wx.Panel):
 		findIb = self.createInputBtn(far, label = "查找");
 		replaceIb = self.createInputBtn(far, label = "替换");
 		ext = self.createReplaceExtend(far);
-		ctx = wx.TextCtrl(far, size = (far.GetSize().x, 420), value = "- 结果显示区 -", style = wx.TE_READONLY|wx.TE_MULTILINE|wx.TE_RICH);
+		ctx = wx.TextCtrl(far, size = (far.GetSize().x, 400), value = "- 结果显示区 -", style = wx.TE_READONLY|wx.TE_MULTILINE|wx.TE_RICH);
 		# 布局
 		box = wx.BoxSizer(wx.VERTICAL);
 		box.Add(findIb, flag = wx.ALIGN_CENTER|wx.TOP|wx.BOTTOM, border = 5);
