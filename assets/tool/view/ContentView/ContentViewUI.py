@@ -67,7 +67,7 @@ class ContentViewUI(wx.Panel):
 		tips = wx.StaticText(self.__dirPath, label = "- 请输入文件夹路径 -");
 		tips.SetFont(wx.Font(8, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL));
 		tips.SetForegroundColour("gray");
-		def onInput(value, callback):
+		def onInput(value, callback = None):
 			ret, label = self.checkDirPath(value);
 			if ret:
 				_GG("CacheManager").setCache("selectedDirPath", value);
@@ -75,8 +75,10 @@ class ContentViewUI(wx.Panel):
 				tips.SetForegroundColour("gray");
 			else:
 				tips.SetLabel("- "+ label +" -");
-				tips.SetForegroundColour(wx.Colour(218,165,32));
-			return callback(value);
+				tips.SetForegroundColour(wx.Colour(255,36,36));
+			if callable(callback):
+				return callback(value);
+			pass;
 		div = DirInputView(self.__dirPath, params = {
 			"inputSize" : (self.GetSize().x - 60, 30),
 			"inputValue" : _GG("CacheManager").getCache("selectedDirPath", ""),
@@ -84,6 +86,7 @@ class ContentViewUI(wx.Panel):
 			"buttonLabel" : "选择目录",
 			"onInput" : onInput,
 		});
+		onInput(_GG("CacheManager").getCache("selectedDirPath", ""));
 		# 布局
 		box = wx.BoxSizer(wx.VERTICAL);
 		box.Add(div, flag = wx.ALIGN_CENTER|wx.TOP|wx.BOTTOM|wx.EXPAND, border = 5);
