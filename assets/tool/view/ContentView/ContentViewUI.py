@@ -76,6 +76,10 @@ class ContentViewUI(wx.Panel):
 			else:
 				tips.SetLabel("- "+ label +" -");
 				tips.SetForegroundColour(wx.Colour(255,36,36));
+			# 更新布局
+			dirInputSizer = self.__dirPath.GetSizer();
+			if dirInputSizer:
+				dirInputSizer.Layout();
 			if callable(callback):
 				return callback(value);
 			pass;
